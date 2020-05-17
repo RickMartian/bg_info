@@ -1,3 +1,4 @@
+import 'package:bg_info/mobx/pages.dart';
 import 'package:bg_info/pages/games_collection_page.dart';
 import 'package:flutter/material.dart';
 
@@ -6,17 +7,18 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class Pages {
+class PagesNumber {
   static const COLLECTION = 0;
 }
 
 class _HomePageState extends State<HomePage> {
+  final pages = Pages();
   int _selectedIndex = 0;
 
   Widget _selectPage() {
     switch (_selectedIndex) {
-      case Pages.COLLECTION:
-        return GamesCollectionPage();
+      case PagesNumber.COLLECTION:
+        return GamesCollectionPage(pages);
       default:
         return Center(
           child: Text("PAGE NUMBER ${_selectedIndex + 1}"),
@@ -24,9 +26,38 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  bool _pagesToAddActionButton(List<int> pages) {
+    bool result = false;
+    pages.forEach((singlePage) {
+      print('single page -> $singlePage');
+      if (singlePage == _selectedIndex) {
+        result = true;
+      }
+    });
+    return result;
+  }
+
+  void _actionButtonOnPressedByPage() {
+    switch (_selectedIndex) {
+      case PagesNumber.COLLECTION:
+        pages.changeNeedToOpenCollectionPageModal(true);
+        break;
+      default:
+        print("Ainda não há método para a página ${_selectedIndex + 1}");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: _pagesToAddActionButton([PagesNumber.COLLECTION])
+          ? FloatingActionButton(
+              onPressed: _actionButtonOnPressedByPage,
+              child: Icon(
+                Icons.add,
+              ),
+            )
+          : Container(),
       appBar: AppBar(
         backgroundColor: Colors.purpleAccent,
         title: Text("Board Games Info!"),
@@ -38,31 +69,33 @@ class _HomePageState extends State<HomePage> {
             labelType: NavigationRailLabelType.selected,
             elevation: 1.0,
             selectedLabelTextStyle: TextStyle(
-              color: Colors.purpleAccent[100],
+              color: Theme.of(context).accentColor,
             ),
             destinations: <NavigationRailDestination>[
               NavigationRailDestination(
                 icon: Icon(Icons.bookmark_border),
                 selectedIcon: Icon(
                   Icons.book,
-                  color: Colors.purpleAccent[100],
+                  color: Theme.of(context).accentColor,
                 ),
                 label: Text('Coleção'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.favorite_border),
                 selectedIcon:
-                    Icon(Icons.favorite, color: Colors.purpleAccent[100]),
+                    Icon(Icons.favorite, color: Theme.of(context).accentColor),
                 label: Text('Amados'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.star_border),
-                selectedIcon: Icon(Icons.star, color: Colors.purpleAccent[100]),
+                selectedIcon:
+                    Icon(Icons.star, color: Theme.of(context).accentColor),
                 label: Text('Favoritos'),
               ),
             ],
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
+              pages.changeCurrentPage(_selectedIndex);
               setState(() {
                 _selectedIndex = index;
               });
@@ -73,10 +106,10 @@ class _HomePageState extends State<HomePage> {
               constraints: BoxConstraints.expand(),
               child: _selectPage(),
               decoration: BoxDecoration(
-                color: Colors.purpleAccent[100],
+                color: Theme.of(context).backgroundColor,
               ),
             ),
-          )
+          ),
         ],
       ),
     );
