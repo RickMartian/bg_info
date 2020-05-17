@@ -1,6 +1,7 @@
 import 'package:bg_info/mobx/pages.dart';
 import 'package:bg_info/pages/games_collection_page.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -12,13 +13,12 @@ class PagesNumber {
 }
 
 class _HomePageState extends State<HomePage> {
-  final pages = Pages();
   int _selectedIndex = 0;
 
   Widget _selectPage() {
     switch (_selectedIndex) {
       case PagesNumber.COLLECTION:
-        return GamesCollectionPage(pages);
+        return GamesCollectionPage();
       default:
         return Center(
           child: Text("PAGE NUMBER ${_selectedIndex + 1}"),
@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
     return result;
   }
 
-  void _actionButtonOnPressedByPage() {
+  void _actionButtonOnPressedByPage(pages) {
     switch (_selectedIndex) {
       case PagesNumber.COLLECTION:
         pages.changeNeedToOpenCollectionPageModal(true);
@@ -49,10 +49,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = Provider.of<Pages>(context, listen: false);
     return Scaffold(
       floatingActionButton: _pagesToAddActionButton([PagesNumber.COLLECTION])
           ? FloatingActionButton(
-              onPressed: _actionButtonOnPressedByPage,
+              onPressed: () {
+                _actionButtonOnPressedByPage(pages);
+              },
               child: Icon(
                 Icons.add,
               ),

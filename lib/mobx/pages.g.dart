@@ -41,10 +41,25 @@ mixin _$Pages on _Pages, Store {
     });
   }
 
+  final _$searchThingsFromBggAtom = Atom(name: '_Pages.searchThingsFromBgg');
+
+  @override
+  List<Map<String, dynamic>> get searchThingsFromBgg {
+    _$searchThingsFromBggAtom.reportRead();
+    return super.searchThingsFromBgg;
+  }
+
+  @override
+  set searchThingsFromBgg(List<Map<String, dynamic>> value) {
+    _$searchThingsFromBggAtom.reportWrite(value, super.searchThingsFromBgg, () {
+      super.searchThingsFromBgg = value;
+    });
+  }
+
   final _$_PagesActionController = ActionController(name: '_Pages');
 
   @override
-  dynamic changeCurrentPage(int newPage) {
+  void changeCurrentPage(int newPage) {
     final _$actionInfo =
         _$_PagesActionController.startAction(name: '_Pages.changeCurrentPage');
     try {
@@ -55,7 +70,7 @@ mixin _$Pages on _Pages, Store {
   }
 
   @override
-  dynamic changeNeedToOpenCollectionPageModal(bool value) {
+  void changeNeedToOpenCollectionPageModal(bool value) {
     final _$actionInfo = _$_PagesActionController.startAction(
         name: '_Pages.changeNeedToOpenCollectionPageModal');
     try {
@@ -66,10 +81,22 @@ mixin _$Pages on _Pages, Store {
   }
 
   @override
+  void updateSearchListOfThingsFromBgg(List<Map<String, dynamic>> list) {
+    final _$actionInfo = _$_PagesActionController.startAction(
+        name: '_Pages.updateSearchListOfThingsFromBgg');
+    try {
+      return super.updateSearchListOfThingsFromBgg(list);
+    } finally {
+      _$_PagesActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String toString() {
     return '''
 currentPage: ${currentPage},
-needToOpenCollectionPageModal: ${needToOpenCollectionPageModal}
+needToOpenCollectionPageModal: ${needToOpenCollectionPageModal},
+searchThingsFromBgg: ${searchThingsFromBgg}
     ''';
   }
 }

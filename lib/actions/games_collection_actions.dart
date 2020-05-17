@@ -1,38 +1,51 @@
 import 'package:bg_info/config.dart';
+import 'package:bg_info/mobx/pages.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:xml2json/xml2json.dart';
 import 'dart:convert' as convert;
 
-void fetchThingsFromBgg(dynamic id) async {
+dynamic fetchThingsFromBgg(dynamic id) async {
   final url = "${Config.baseBggUrl}/things?id=$id";
   final response = await http.get(url);
   final myTransformer = Xml2Json();
   if (response.statusCode == 200) {
     myTransformer.parse(response.body);
-    final json = myTransformer.toGData();
+    final json = myTransformer.toParker();
     Map<String, dynamic> decoded = convert.jsonDecode(json);
-    final imageUrl = decoded['items']['item']["image"]["\$t"];
-    print("IMAGE -> $imageUrl");
-    // TODO: implementar para enviar a imagem e o nome a Store e criar variavel para armazenar a busca formatada e retornar na lista aberta!
+    final imageUrl = decoded['items']['item']["image"];
+    return imageUrl;
   }
 }
 
-void fetchFromBgg(String text) async {
+dynamic fetchBoardGamesFromBgg(String text, BuildContext context) async {
   print("TEXTO A SER BUSCADO -> $text");
   final url = "${Config.baseBggUrl}/search?query=$text";
   final response = await http.get(url);
   final myTransformer = Xml2Json();
+  final pages = Provider.of<Pages>(context, listen: false);
 
   if (response.statusCode == 200) {
-    print("respXml -> ${response.body}");
+    List<Map<String, dynamic>> listOfGamesFetched = [];
     myTransformer.parse(response.body);
     final json = myTransformer.toGData();
     Map<String, dynamic> decoded = convert.jsonDecode(json);
     List<dynamic> array = decoded['items']['item'];
-    array?.forEach((dynamic value) {
-      print("ITEM -> $value");
-      final id = value["id"];
-      fetchThingsFromBgg(id);
-    });
+    if (array != null) {
+      for (var value in array) {
+        final type = value["type"];
+        if (type == 'boardgame' || type == 'boardgameexpansion') {
+          final id = value["id"];
+          final title = value["name"]["value"];
+          await fetchThingsFromBgg(id).then((response) {
+            listOfGamesFetched.add(
+                {"id": id, "title": title, "image": response, "type": type});
+          });
+        }
+      }
+    }
+    pages.updateSearchListOfThingsFromBgg(listOfGamesFetched);
+    return listOfGamesFetched;
   }
 }

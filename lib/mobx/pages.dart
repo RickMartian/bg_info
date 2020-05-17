@@ -11,13 +11,21 @@ abstract class _Pages with Store {
   @observable
   bool needToOpenCollectionPageModal = false;
 
+  @observable
+  List<Map<String, dynamic>> searchThingsFromBgg = List<Map<String, dynamic>>();
+
   @action
-  changeCurrentPage(int newPage) {
+  void changeCurrentPage(int newPage) {
     currentPage = newPage;
   }
 
   @action
-  changeNeedToOpenCollectionPageModal(bool value) {
+  void changeNeedToOpenCollectionPageModal(bool value) {
     needToOpenCollectionPageModal = value;
+  }
+
+  @action
+  void updateSearchListOfThingsFromBgg(List<Map<String, dynamic>> list) {
+    searchThingsFromBgg = list;
   }
 }

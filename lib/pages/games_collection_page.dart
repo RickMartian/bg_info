@@ -1,14 +1,15 @@
 import 'package:bg_info/actions/games_collection_actions.dart';
 import 'package:bg_info/components/details_card.dart';
+import 'package:bg_info/mobx/pages.dart';
 import 'package:bg_info/utils/modal.dart';
 import 'package:bg_info/utils/debouncer.dart';
 import 'package:bg_info/utils/details_card_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:provider/provider.dart';
 
 class GamesCollectionPage extends StatefulWidget {
-  final pages;
-  GamesCollectionPage(this.pages);
+  GamesCollectionPage();
 
   @override
   _GamesCollectionPageState createState() => _GamesCollectionPageState();
@@ -78,33 +79,64 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
     );
   }
 
-  void _onChanged(String text) {
+  Widget _searchItemBuilder(BuildContext context, int index,
+      double deviceHeight, double deviceWidth, games) {
+    print("GAMES TEST -> $games");
+    return games.length > 0
+        ? DetailsCard(
+            deviceHeight,
+            deviceWidth,
+            index,
+            games,
+            Image.network(
+              games[index]["image"] != null
+                  ? games[index]["image"]
+                  : "https://www.publicdomainpictures.net/pictures/280000/velka/not-found-image-15383864787lu.jpg",
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                renderDetailsText(games[index]["title"], "", TextAlign.center),
+                renderDetailsText("Id\n", games[index]["id"], TextAlign.start),
+                renderDetailsText(
+                    "type\n", games[index]["type"], TextAlign.start),
+              ],
+            ),
+          )
+        : Container(
+            child: Text("Nenhum jogo encontrado."),
+          );
+  }
+
+  void _onChanged(String text, pages) {
     print("text to search -> " + text);
     _debouncer.run(() => print("text to fetch -> " + text));
   }
 
-  void _onChangedSearch(String text) {
+  void _onChangedSearch(String text, pages) {
     print("VALUE TO SEARCH -> $text");
-    _debouncer.run(() => fetchFromBgg(text));
+    _debouncer.run(() => fetchBoardGamesFromBgg(text, context));
   }
 
-  Future<bool> _onBackPressedAtModal() {
+  Future<bool> _onBackPressedAtModal(pages) async {
     print("voltou");
-    Navigator.pop(context);
-    return widget.pages.changeNeedToOpenCollectionPageModal(false);
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
+    final pages = Provider.of<Pages>(context, listen: false);
     return Container(
       child: Column(
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
             child: TextField(
-              onChanged: _onChanged,
+              onChanged: (value) {
+                _onChanged(value, pages);
+              },
               decoration: InputDecoration(
                 labelText: "Pesquisar",
                 labelStyle: TextStyle(
@@ -139,16 +171,20 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
             ),
           ),
           Observer(builder: (_) {
-            if (widget.pages.needToOpenCollectionPageModal) {
+            if (pages.needToOpenCollectionPageModal) {
               print("ABRIR MODAL!");
               _modalDelay.run(() => modal.mainBottomSheet(
                   context,
                   WillPopScope(
-                    onWillPop: _onBackPressedAtModal,
+                    onWillPop: () {
+                      return _onBackPressedAtModal(pages);
+                    },
                     child: Column(
                       children: <Widget>[
                         TextField(
-                          onChanged: _onChangedSearch,
+                          onChanged: (text) {
+                            _onChangedSearch(text, pages);
+                          },
                           decoration: InputDecoration(
                             labelText: "Pesquisar",
                             labelStyle: TextStyle(
@@ -174,19 +210,26 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: ListView.builder(
-                            itemBuilder: (BuildContext context, int index) =>
-                                _itemBuilder(
-                                    context, index, deviceHeight, deviceWidth),
-                            itemCount: _games.length,
+                        Observer(
+                          builder: (_) => Expanded(
+                            child: ListView.builder(
+                              itemBuilder: (BuildContext context, int index) =>
+                                  _searchItemBuilder(
+                                context,
+                                index,
+                                deviceHeight,
+                                deviceWidth,
+                                pages.searchThingsFromBgg,
+                              ),
+                              itemCount: pages.searchThingsFromBgg.length,
+                            ),
                           ),
                         ),
                         RaisedButton(
                           onPressed: () {
                             Navigator.pop(context);
-                            widget.pages
-                                .changeNeedToOpenCollectionPageModal(false);
+                            pages.updateSearchListOfThingsFromBgg([]);
+                            pages.changeNeedToOpenCollectionPageModal(false);
                           },
                           child: Text("Fechar"),
                         ),
