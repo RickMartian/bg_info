@@ -39,8 +39,11 @@ dynamic fetchBoardGamesFromBgg(String text, BuildContext context) async {
           final id = value["id"];
           final title = value["name"]["value"];
           await fetchThingsFromBgg(id).then((response) {
-            listOfGamesFetched.add(
-                {"id": id, "title": title, "image": response, "type": type});
+            final image = response == null
+                ? "https://www.publicdomainpictures.net/pictures/280000/velka/not-found-image-15383864787lu.jpg"
+                : response;
+            listOfGamesFetched
+                .add({"id": id, "title": title, "image": image, "type": type});
           });
         }
       }
