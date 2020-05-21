@@ -56,6 +56,21 @@ mixin _$Pages on _Pages, Store {
     });
   }
 
+  final _$isLoadingAtom = Atom(name: '_Pages.isLoading');
+
+  @override
+  bool get isLoading {
+    _$isLoadingAtom.reportRead();
+    return super.isLoading;
+  }
+
+  @override
+  set isLoading(bool value) {
+    _$isLoadingAtom.reportWrite(value, super.isLoading, () {
+      super.isLoading = value;
+    });
+  }
+
   final _$_PagesActionController = ActionController(name: '_Pages');
 
   @override
@@ -92,11 +107,23 @@ mixin _$Pages on _Pages, Store {
   }
 
   @override
+  void updateIsLoading(bool value) {
+    final _$actionInfo =
+        _$_PagesActionController.startAction(name: '_Pages.updateIsLoading');
+    try {
+      return super.updateIsLoading(value);
+    } finally {
+      _$_PagesActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String toString() {
     return '''
 currentPage: ${currentPage},
 needToOpenCollectionPageModal: ${needToOpenCollectionPageModal},
-searchThingsFromBgg: ${searchThingsFromBgg}
+searchThingsFromBgg: ${searchThingsFromBgg},
+isLoading: ${isLoading}
     ''';
   }
 }

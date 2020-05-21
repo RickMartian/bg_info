@@ -14,6 +14,9 @@ abstract class _Pages with Store {
   @observable
   List<Map<String, dynamic>> searchThingsFromBgg = List<Map<String, dynamic>>();
 
+  @observable
+  bool isLoading = false;
+
   @action
   void changeCurrentPage(int newPage) {
     currentPage = newPage;
@@ -27,5 +30,10 @@ abstract class _Pages with Store {
   @action
   void updateSearchListOfThingsFromBgg(List<Map<String, dynamic>> list) {
     searchThingsFromBgg = list;
+  }
+
+  @action
+  void updateIsLoading(bool value) {
+    isLoading = value;
   }
 }

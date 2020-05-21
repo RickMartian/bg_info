@@ -82,7 +82,7 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
   Widget _searchItemBuilder(BuildContext context, int index,
       double deviceHeight, double deviceWidth, games) {
     print("GAMES TEST -> $games");
-    return games.length > 0
+    return (games.length > 0)
         ? DetailsCard(
             deviceHeight,
             deviceWidth,
@@ -211,8 +211,22 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
                           ),
                         ),
                         Observer(
-                          builder: (_) => Expanded(
-                            child: ListView.builder(
+                          builder: (_) {
+                            print("PAGES STATE -> $pages");
+                            if (pages.isLoading) {
+                              return Flexible(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: CircularProgressIndicator(
+                                    backgroundColor: Theme.of(context)
+                                        .accentColor
+                                        .withOpacity(0.8),
+                                  ),
+                                ),
+                              );
+                            }
+                            return Expanded(
+                                child: ListView.builder(
                               itemBuilder: (BuildContext context, int index) =>
                                   _searchItemBuilder(
                                 context,
@@ -222,14 +236,15 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
                                 pages.searchThingsFromBgg,
                               ),
                               itemCount: pages.searchThingsFromBgg.length,
-                            ),
-                          ),
+                            ));
+                          },
                         ),
                         RaisedButton(
                           onPressed: () {
                             Navigator.pop(context);
                             pages.updateSearchListOfThingsFromBgg([]);
                             pages.changeNeedToOpenCollectionPageModal(false);
+                            pages.updateIsLoading(false);
                           },
                           child: Text("Fechar"),
                         ),

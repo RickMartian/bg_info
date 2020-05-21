@@ -26,6 +26,8 @@ dynamic fetchBoardGamesFromBgg(String text, BuildContext context) async {
   final myTransformer = Xml2Json();
   final pages = Provider.of<Pages>(context, listen: false);
 
+  pages.updateIsLoading(true);
+
   if (response.statusCode == 200) {
     List<Map<String, dynamic>> listOfGamesFetched = [];
     myTransformer.parse(response.body);
@@ -49,6 +51,7 @@ dynamic fetchBoardGamesFromBgg(String text, BuildContext context) async {
       }
     }
     pages.updateSearchListOfThingsFromBgg(listOfGamesFetched);
+    pages.updateIsLoading(false);
     return listOfGamesFetched;
   }
 }
