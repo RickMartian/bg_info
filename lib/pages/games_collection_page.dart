@@ -79,28 +79,89 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
     );
   }
 
+  AlertDialog _renderAlertDialog(
+      String title, Widget content, List<String> options) {
+    return AlertDialog(
+      title: Text(
+        title,
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: content,
+      elevation: 10.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      backgroundColor: Theme.of(context).accentColor.withOpacity(0.9),
+      actions: <Widget>[
+        FlatButton(
+          child: Text(
+            options[0],
+            style: TextStyle(color: Colors.white),
+          ),
+          onPressed: () {
+            print("PRESSED ${options[0]}");
+          },
+        ),
+        FlatButton(
+          child: Text(
+            options[1],
+            style: TextStyle(color: Colors.white),
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ],
+    );
+  }
+
+  void _onTapDetailsCardFromSearch() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => _renderAlertDialog(
+          "Salvar jogo selecionado",
+          Text(
+            "Deseja salvar o jogo selecionado?",
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+          ["Sim", "Não"]),
+    );
+  }
+
   Widget _searchItemBuilder(BuildContext context, int index,
       double deviceHeight, double deviceWidth, games) {
     print("GAMES TEST -> $games");
     return (games.length > 0)
-        ? DetailsCard(
-            deviceHeight,
-            deviceWidth,
-            index,
-            games,
-            Image.network(
-              games[index]["image"] != null
-                  ? games[index]["image"]
-                  : "https://www.publicdomainpictures.net/pictures/280000/velka/not-found-image-15383864787lu.jpg",
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                renderDetailsText(games[index]["title"], "", TextAlign.center),
-                renderDetailsText("Id\n", games[index]["id"], TextAlign.start),
-                renderDetailsText(
-                    "type\n", games[index]["type"], TextAlign.start),
-              ],
+        ? InkWell(
+            onTap: _onTapDetailsCardFromSearch,
+            splashColor: Theme.of(context).accentColor,
+            child: DetailsCard(
+              deviceHeight,
+              deviceWidth,
+              index,
+              games,
+              Image.network(
+                games[index]["image"] != null
+                    ? games[index]["image"]
+                    : "https://www.publicdomainpictures.net/pictures/280000/velka/not-found-image-15383864787lu.jpg",
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  renderDetailsText(
+                      games[index]["title"], "", TextAlign.center),
+                  renderDetailsText(
+                      "Id\n", games[index]["id"], TextAlign.start),
+                  renderDetailsText(
+                      "type\n", games[index]["type"], TextAlign.start),
+                ],
+              ),
             ),
           )
         : Container(
@@ -226,17 +287,19 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
                               );
                             }
                             return Expanded(
-                                child: ListView.builder(
-                              itemBuilder: (BuildContext context, int index) =>
-                                  _searchItemBuilder(
-                                context,
-                                index,
-                                deviceHeight,
-                                deviceWidth,
-                                pages.searchThingsFromBgg,
+                              child: ListView.builder(
+                                itemBuilder:
+                                    (BuildContext context, int index) =>
+                                        _searchItemBuilder(
+                                  context,
+                                  index,
+                                  deviceHeight,
+                                  deviceWidth,
+                                  pages.searchThingsFromBgg,
+                                ),
+                                itemCount: pages.searchThingsFromBgg.length,
                               ),
-                              itemCount: pages.searchThingsFromBgg.length,
-                            ));
+                            );
                           },
                         ),
                         RaisedButton(
