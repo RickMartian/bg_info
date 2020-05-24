@@ -222,8 +222,7 @@ class GamesCollectionPage extends StatelessWidget {
               builder: (_) {
                 print('pages state -> $pages');
                 return ListView.builder(
-                  itemBuilder: (BuildContext context, int index) =>
-                      _itemBuilder(
+                  itemBuilder: (_, int index) => _itemBuilder(
                     context,
                     index,
                     deviceHeight,
@@ -293,9 +292,8 @@ class GamesCollectionPage extends StatelessWidget {
                               }
                               return Expanded(
                                 child: ListView.builder(
-                                  itemBuilder:
-                                      (BuildContext context, int index) =>
-                                          _searchItemBuilder(
+                                  itemBuilder: (_, int index) =>
+                                      _searchItemBuilder(
                                     context,
                                     index,
                                     deviceHeight,
