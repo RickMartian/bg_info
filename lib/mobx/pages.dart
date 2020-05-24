@@ -1,4 +1,5 @@
 import 'package:bg_info/pages/home_page.dart';
+import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
 part 'pages.g.dart';
 
@@ -16,6 +17,12 @@ abstract class _Pages with Store {
 
   @observable
   bool isLoading = false;
+
+  @observable
+  List<Map<String, dynamic>> gamesCollectionList = List<Map<String, dynamic>>();
+
+  @observable
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @action
   void changeCurrentPage(int newPage) {
@@ -35,5 +42,10 @@ abstract class _Pages with Store {
   @action
   void updateIsLoading(bool value) {
     isLoading = value;
+  }
+
+  @action
+  void updateGamesCollectionList(Map<String, dynamic> gameToSave) {
+    gamesCollectionList.add(gameToSave);
   }
 }

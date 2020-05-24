@@ -8,82 +8,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 
-class GamesCollectionPage extends StatefulWidget {
-  GamesCollectionPage();
-
-  @override
-  _GamesCollectionPageState createState() => _GamesCollectionPageState();
-}
-
-class _GamesCollectionPageState extends State<GamesCollectionPage> {
-  Modal modal = Modal();
+class GamesCollectionPage extends StatelessWidget {
+  final Modal modal = Modal();
   final _debouncer = Debouncer(delay: Duration(milliseconds: 1000));
   final _modalDelay = Debouncer(delay: Duration(milliseconds: 250));
-  final _games = [
-    {
-      "name": "Unstable Unicorns",
-      "sleeve": "Padrão",
-      "posse": "Bibi",
-      "url":
-          "https://cf.geekdo-images.com/original/img/JXjU3CrzgTFZdiY6fP4zO1YPha0=/0x0/pic3912914.jpg"
-    },
-    {
-      "name": "Marrakech",
-      "sleeve": "N/A",
-      "posse": "N/A",
-      "url":
-          "https://cf.geekdo-images.com/original/img/JXjU3CrzgTFZdiY6fP4zO1YPha0=/0x0/pic3912914.jpg"
-    },
-    {
-      "name": "Merlin",
-      "sleeve": "Padrão euro",
-      "posse": "Rick",
-      "url":
-          "https://cf.geekdo-images.com/original/img/JXjU3CrzgTFZdiY6fP4zO1YPha0=/0x0/pic3912914.jpg"
-    },
-    {
-      "name": "Kitchen Rush",
-      "sleeve": "Padrão euro e mini euro",
-      "posse": "Rick",
-      "url":
-          "https://cf.geekdo-images.com/original/img/JXjU3CrzgTFZdiY6fP4zO1YPha0=/0x0/pic3912914.jpg"
-    },
-    {
-      "name": "Covil",
-      "sleeve": "Padrão euro e mini euro",
-      "posse": "Bibi",
-      "url":
-          "https://cf.geekdo-images.com/original/img/JXjU3CrzgTFZdiY6fP4zO1YPha0=/0x0/pic3912914.jpg"
-    },
-  ];
 
   Widget _itemBuilder(BuildContext context, int index, double deviceHeight,
-      double deviceWidth) {
+      double deviceWidth, List<Map<String, dynamic>> games) {
     return DetailsCard(
       deviceHeight,
       deviceWidth,
       index,
-      _games,
+      games,
       Image.network(
-        _games[index]["url"],
+        games[index]["image"],
       ),
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          renderDetailsText(_games[index]["name"], "", TextAlign.center),
+          renderDetailsText(games[index]["title"], "", TextAlign.center),
+          renderDetailsText("Id\n", games[index]["id"], TextAlign.start),
+          renderDetailsText("type\n", games[index]["type"], TextAlign.start),
           renderDetailsText(
-              "Sleeve\n", _games[index]["sleeve"], TextAlign.start),
-          renderDetailsText("Posse\n", _games[index]["posse"], TextAlign.start),
+              "Sleeve\n", games[index]["sleeve"], TextAlign.start),
+          renderDetailsText("Posse\n", games[index]["owner"], TextAlign.start),
         ],
       ),
     );
   }
 
   AlertDialog _renderAlertDialog(
-      String title, Widget content, List<String> options) {
+    String title,
+    Widget content,
+    List<String> options,
+    Map<String, dynamic> gameSelected,
+    BuildContext context,
+  ) {
+    final pagesController = Provider.of<Pages>(context, listen: false);
     return AlertDialog(
       title: Text(
         title,
+        textAlign: TextAlign.center,
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
@@ -102,7 +67,26 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
             style: TextStyle(color: Colors.white),
           ),
           onPressed: () {
-            print("PRESSED ${options[0]}");
+            pagesController.changeNeedToOpenCollectionPageModal(false);
+            final gameToSave = {
+              "id": gameSelected["id"],
+              "title": gameSelected["title"],
+              "image": gameSelected["image"],
+              "type": gameSelected["type"],
+              "sleeve": "N/A",
+              "owner": "N/A",
+            };
+            pagesController.updateGamesCollectionList(gameToSave);
+            final snackBar = SnackBar(
+              content: Text('Jogo salvo com sucesso!'),
+              duration: Duration(
+                milliseconds: 1500,
+              ),
+            );
+            // Navigator.pop(context);
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            pagesController.scaffoldKey.currentState.showSnackBar(snackBar);
+            pagesController.updateSearchListOfThingsFromBgg([]);
           },
         ),
         FlatButton(
@@ -118,28 +102,37 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
     );
   }
 
-  void _onTapDetailsCardFromSearch() {
+  void _onTapDetailsCardFromSearch(
+      Map<String, dynamic> gameSelected, BuildContext context) {
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (_) => _renderAlertDialog(
-          "Salvar jogo selecionado",
-          Text(
-            "Deseja salvar o jogo selecionado?",
-            style: TextStyle(
-              color: Colors.white,
-            ),
+        "Salvar jogo selecionado",
+        Text(
+          "Deseja salvar o jogo selecionado?",
+          style: TextStyle(
+            color: Colors.white,
           ),
-          ["Sim", "Não"]),
+        ),
+        ["Sim", "Não"],
+        gameSelected,
+        context,
+      ),
     );
   }
 
-  Widget _searchItemBuilder(BuildContext context, int index,
-      double deviceHeight, double deviceWidth, games) {
+  Widget _searchItemBuilder(
+    BuildContext context,
+    int index,
+    double deviceHeight,
+    double deviceWidth,
+    List<Map<String, dynamic>> games,
+  ) {
     print("GAMES TEST -> $games");
     return (games.length > 0)
         ? InkWell(
-            onTap: _onTapDetailsCardFromSearch,
+            onTap: () => _onTapDetailsCardFromSearch(games[index], context),
             splashColor: Theme.of(context).accentColor,
             child: DetailsCard(
               deviceHeight,
@@ -174,7 +167,7 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
     _debouncer.run(() => print("text to fetch -> " + text));
   }
 
-  void _onChangedSearch(String text, pages) {
+  void _onChangedSearch(String text, pages, BuildContext context) {
     print("VALUE TO SEARCH -> $text");
     _debouncer.run(() => fetchBoardGamesFromBgg(text, context));
   }
@@ -188,7 +181,7 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
   Widget build(BuildContext context) {
     double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
-    final pages = Provider.of<Pages>(context, listen: false);
+    final pages = Provider.of<Pages>(context);
     return Container(
       child: Column(
         children: <Widget>[
@@ -225,99 +218,112 @@ class _GamesCollectionPageState extends State<GamesCollectionPage> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemBuilder: (BuildContext context, int index) =>
-                  _itemBuilder(context, index, deviceHeight, deviceWidth),
-              itemCount: _games.length,
+            child: Observer(
+              builder: (_) {
+                print('pages state -> $pages');
+                return ListView.builder(
+                  itemBuilder: (BuildContext context, int index) =>
+                      _itemBuilder(
+                    context,
+                    index,
+                    deviceHeight,
+                    deviceWidth,
+                    pages.gamesCollectionList,
+                  ),
+                  itemCount: pages.gamesCollectionList.length,
+                );
+              },
             ),
           ),
-          Observer(builder: (_) {
-            if (pages.needToOpenCollectionPageModal) {
-              print("ABRIR MODAL!");
-              _modalDelay.run(() => modal.mainBottomSheet(
-                  context,
-                  WillPopScope(
-                    onWillPop: () {
-                      return _onBackPressedAtModal(pages);
-                    },
-                    child: Column(
-                      children: <Widget>[
-                        TextField(
-                          onChanged: (text) {
-                            _onChangedSearch(text, pages);
-                          },
-                          decoration: InputDecoration(
-                            labelText: "Pesquisar",
-                            labelStyle: TextStyle(
-                              color: Theme.of(context).accentColor,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: Theme.of(context).accentColor,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
+          Observer(
+            builder: (_) {
+              if (pages.needToOpenCollectionPageModal) {
+                print("ABRIR MODAL!");
+                _modalDelay.run(() => modal.mainBottomSheet(
+                    context,
+                    WillPopScope(
+                      onWillPop: () {
+                        return _onBackPressedAtModal(pages);
+                      },
+                      child: Column(
+                        children: <Widget>[
+                          TextField(
+                            onChanged: (text) {
+                              _onChangedSearch(text, pages, context);
+                            },
+                            decoration: InputDecoration(
+                              labelText: "Pesquisar",
+                              labelStyle: TextStyle(
                                 color: Theme.of(context).accentColor,
                               ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
+                              prefixIcon: Icon(
+                                Icons.search,
                                 color: Theme.of(context).accentColor,
-                                width: 2.0,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).accentColor,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).accentColor,
+                                  width: 2.0,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Observer(
-                          builder: (_) {
-                            print("PAGES STATE -> $pages");
-                            if (pages.isLoading) {
-                              return Flexible(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: CircularProgressIndicator(
-                                    backgroundColor: Theme.of(context)
-                                        .accentColor
-                                        .withOpacity(0.8),
+                          Observer(
+                            builder: (_) {
+                              print("PAGES STATE -> $pages");
+                              if (pages.isLoading) {
+                                return Flexible(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: CircularProgressIndicator(
+                                      backgroundColor: Theme.of(context)
+                                          .accentColor
+                                          .withOpacity(0.8),
+                                    ),
                                   ),
+                                );
+                              }
+                              return Expanded(
+                                child: ListView.builder(
+                                  itemBuilder:
+                                      (BuildContext context, int index) =>
+                                          _searchItemBuilder(
+                                    context,
+                                    index,
+                                    deviceHeight,
+                                    deviceWidth,
+                                    pages.searchThingsFromBgg,
+                                  ),
+                                  itemCount: pages.searchThingsFromBgg.length,
                                 ),
                               );
-                            }
-                            return Expanded(
-                              child: ListView.builder(
-                                itemBuilder:
-                                    (BuildContext context, int index) =>
-                                        _searchItemBuilder(
-                                  context,
-                                  index,
-                                  deviceHeight,
-                                  deviceWidth,
-                                  pages.searchThingsFromBgg,
-                                ),
-                                itemCount: pages.searchThingsFromBgg.length,
-                              ),
-                            );
-                          },
-                        ),
-                        RaisedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            pages.updateSearchListOfThingsFromBgg([]);
-                            pages.changeNeedToOpenCollectionPageModal(false);
-                            pages.updateIsLoading(false);
-                          },
-                          child: Text("Fechar"),
-                        ),
-                      ],
+                            },
+                          ),
+                          RaisedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              pages.updateSearchListOfThingsFromBgg([]);
+                              pages.changeNeedToOpenCollectionPageModal(false);
+                              pages.updateIsLoading(false);
+                            },
+                            child: Text("Fechar"),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  MediaQuery.of(context).size.height));
-            }
-            return Container();
-          })
+                    MediaQuery.of(context).size.height));
+              }
+              return Container();
+            },
+          )
         ],
       ),
     );

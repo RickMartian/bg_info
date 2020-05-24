@@ -71,6 +71,36 @@ mixin _$Pages on _Pages, Store {
     });
   }
 
+  final _$gamesCollectionListAtom = Atom(name: '_Pages.gamesCollectionList');
+
+  @override
+  List<Map<String, dynamic>> get gamesCollectionList {
+    _$gamesCollectionListAtom.reportRead();
+    return super.gamesCollectionList;
+  }
+
+  @override
+  set gamesCollectionList(List<Map<String, dynamic>> value) {
+    _$gamesCollectionListAtom.reportWrite(value, super.gamesCollectionList, () {
+      super.gamesCollectionList = value;
+    });
+  }
+
+  final _$scaffoldKeyAtom = Atom(name: '_Pages.scaffoldKey');
+
+  @override
+  GlobalKey<ScaffoldState> get scaffoldKey {
+    _$scaffoldKeyAtom.reportRead();
+    return super.scaffoldKey;
+  }
+
+  @override
+  set scaffoldKey(GlobalKey<ScaffoldState> value) {
+    _$scaffoldKeyAtom.reportWrite(value, super.scaffoldKey, () {
+      super.scaffoldKey = value;
+    });
+  }
+
   final _$_PagesActionController = ActionController(name: '_Pages');
 
   @override
@@ -118,12 +148,25 @@ mixin _$Pages on _Pages, Store {
   }
 
   @override
+  void updateGamesCollectionList(Map<String, dynamic> gameToSave) {
+    final _$actionInfo = _$_PagesActionController.startAction(
+        name: '_Pages.updateGamesCollectionList');
+    try {
+      return super.updateGamesCollectionList(gameToSave);
+    } finally {
+      _$_PagesActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String toString() {
     return '''
 currentPage: ${currentPage},
 needToOpenCollectionPageModal: ${needToOpenCollectionPageModal},
 searchThingsFromBgg: ${searchThingsFromBgg},
-isLoading: ${isLoading}
+isLoading: ${isLoading},
+gamesCollectionList: ${gamesCollectionList},
+scaffoldKey: ${scaffoldKey}
     ''';
   }
 }

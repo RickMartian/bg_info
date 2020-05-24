@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Provider<Pages>(
       create: (_) => Pages(),
+      lazy: false,
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
