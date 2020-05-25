@@ -1,5 +1,6 @@
-import 'package:bg_info/mobx/pages.dart';
-import 'package:bg_info/pages/games_collection_page.dart';
+import 'package:bg_info/pages/games_collection_page/games_collection_controller.dart';
+import 'package:bg_info/pages/games_collection_page/games_collection_page.dart';
+import 'package:bg_info/pages/pages_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
@@ -31,28 +32,33 @@ class HomePage extends StatelessWidget {
     return result;
   }
 
-  void _actionButtonOnPressedByPage(Pages pages) {
-    switch (pages.currentPage) {
+  void _actionButtonOnPressedByPage(
+      GamesCollectionController gamesCollectionController,
+      PagesController pagesController) {
+    switch (pagesController.currentPage) {
       case PagesNumber.COLLECTION:
-        pages.changeNeedToOpenCollectionPageModal(true);
+        gamesCollectionController.changeNeedToOpenCollectionPageModal(true);
         break;
       default:
-        print("Ainda não há método para a página ${pages.currentPage + 1}");
+        print(
+            "Ainda não há método para a página ${pagesController.currentPage + 1}");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final pages = Provider.of<Pages>(context);
+    final pagesController = Provider.of<PagesController>(context);
+    final gamesCollectionController =
+        Provider.of<GamesCollectionController>(context);
     return Observer(
       builder: (_) {
         return Scaffold(
-          key: pages.scaffoldKey,
           floatingActionButton: _pagesToAddActionButton(
-                  [PagesNumber.COLLECTION], pages.currentPage)
+                  [PagesNumber.COLLECTION], pagesController.currentPage)
               ? FloatingActionButton(
                   onPressed: () {
-                    _actionButtonOnPressedByPage(pages);
+                    _actionButtonOnPressedByPage(
+                        gamesCollectionController, pagesController);
                   },
                   child: Icon(
                     Icons.add,
@@ -97,9 +103,9 @@ class HomePage extends StatelessWidget {
                     label: Text('Favoritos'),
                   ),
                 ],
-                selectedIndex: pages.currentPage,
+                selectedIndex: pagesController.currentPage,
                 onDestinationSelected: (int index) {
-                  pages.changeCurrentPage(index);
+                  pagesController.changeCurrentPage(index);
                 },
                 // );
                 //  },
@@ -107,7 +113,7 @@ class HomePage extends StatelessWidget {
               Expanded(
                 child: Container(
                   constraints: BoxConstraints.expand(),
-                  child: _selectPage(pages.currentPage),
+                  child: _selectPage(pagesController.currentPage),
                   decoration: BoxDecoration(
                     color: Theme.of(context).backgroundColor,
                   ),

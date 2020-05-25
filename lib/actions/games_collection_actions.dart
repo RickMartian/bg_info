@@ -1,5 +1,5 @@
 import 'package:bg_info/config.dart';
-import 'package:bg_info/mobx/pages.dart';
+import 'package:bg_info/pages/games_collection_page/games_collection_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -21,8 +21,9 @@ dynamic fetchThingsFromBgg(dynamic id) async {
 
 dynamic fetchBoardGamesFromBgg(String text, BuildContext context) async {
   print("TEXTO A SER BUSCADO -> $text");
-  final pages = Provider.of<Pages>(context, listen: false);
-  pages.updateIsLoading(true);
+  final gamesCollectionController =
+      Provider.of<GamesCollectionController>(context, listen: false);
+  gamesCollectionController.updateIsLoading(true);
   final url = "${Config.baseBggUrl}/search?query=$text";
   final response = await http.get(url);
   final myTransformer = Xml2Json();
@@ -50,23 +51,15 @@ dynamic fetchBoardGamesFromBgg(String text, BuildContext context) async {
           }
         }
       }
-      pages.updateSearchListOfThingsFromBgg(listOfGamesFetched);
-      pages.updateIsLoading(false);
+      gamesCollectionController
+          .updateSearchListOfThingsFromBgg(listOfGamesFetched);
+      gamesCollectionController.updateIsLoading(false);
       return listOfGamesFetched;
     } catch (error) {
       print("json parse error -> $error");
-      pages.updateIsLoading(false);
-      pages.changeNeedToOpenCollectionPageModal(false);
+      gamesCollectionController.updateIsLoading(false);
+      gamesCollectionController.changeNeedToOpenCollectionPageModal(false);
       Navigator.popUntil(context, (route) => route.isFirst);
-      final snackBar = SnackBar(
-        content: Text(
-          "Ocorreu um erro ao buscar o jogo :(\nTente especificar melhor o nome :D",
-        ),
-        duration: Duration(
-          milliseconds: 3500,
-        ),
-      );
-      pages.scaffoldKey.currentState.showSnackBar(snackBar);
     }
   }
 }

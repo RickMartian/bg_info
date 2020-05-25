@@ -1,6 +1,6 @@
 import 'package:bg_info/actions/games_collection_actions.dart';
 import 'package:bg_info/components/details_card.dart';
-import 'package:bg_info/mobx/pages.dart';
+import 'package:bg_info/pages/games_collection_page/games_collection_controller.dart';
 import 'package:bg_info/utils/modal.dart';
 import 'package:bg_info/utils/debouncer.dart';
 import 'package:bg_info/utils/details_card_text.dart';
@@ -44,7 +44,8 @@ class GamesCollectionPage extends StatelessWidget {
     Map<String, dynamic> gameSelected,
     BuildContext context,
   ) {
-    final pagesController = Provider.of<Pages>(context, listen: false);
+    final gamesCollectionController =
+        Provider.of<GamesCollectionController>(context, listen: false);
     return AlertDialog(
       title: Text(
         title,
@@ -67,26 +68,12 @@ class GamesCollectionPage extends StatelessWidget {
             style: TextStyle(color: Colors.white),
           ),
           onPressed: () {
-            pagesController.changeNeedToOpenCollectionPageModal(false);
-            final gameToSave = {
-              "id": gameSelected["id"],
-              "title": gameSelected["title"],
-              "image": gameSelected["image"],
-              "type": gameSelected["type"],
-              "sleeve": "N/A",
-              "owner": "N/A",
-            };
-            pagesController.updateGamesCollectionList(gameToSave);
-            final snackBar = SnackBar(
-              content: Text('Jogo salvo com sucesso!'),
-              duration: Duration(
-                milliseconds: 1500,
-              ),
-            );
+            gamesCollectionController
+                .changeNeedToOpenCollectionPageModal(false);
+            gamesCollectionController.updateGamesCollectionList(gameSelected);
             // Navigator.pop(context);
             Navigator.of(context).popUntil((route) => route.isFirst);
-            pagesController.scaffoldKey.currentState.showSnackBar(snackBar);
-            pagesController.updateSearchListOfThingsFromBgg([]);
+            gamesCollectionController.updateSearchListOfThingsFromBgg([]);
           },
         ),
         FlatButton(
@@ -181,7 +168,8 @@ class GamesCollectionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
-    final pages = Provider.of<Pages>(context);
+    final gamesCollectionController =
+        Provider.of<GamesCollectionController>(context);
     return Container(
       child: Column(
         children: <Widget>[
@@ -189,7 +177,7 @@ class GamesCollectionPage extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
             child: TextField(
               onChanged: (value) {
-                _onChanged(value, pages);
+                _onChanged(value, gamesCollectionController);
               },
               decoration: InputDecoration(
                 labelText: "Pesquisar",
@@ -220,35 +208,38 @@ class GamesCollectionPage extends StatelessWidget {
           Expanded(
             child: Observer(
               builder: (_) {
-                print('pages state -> $pages');
+                print(
+                    'gamesCollectionController state -> $gamesCollectionController');
                 return ListView.builder(
                   itemBuilder: (_, int index) => _itemBuilder(
                     context,
                     index,
                     deviceHeight,
                     deviceWidth,
-                    pages.gamesCollectionList,
+                    gamesCollectionController.gamesCollectionList,
                   ),
-                  itemCount: pages.gamesCollectionList.length,
+                  itemCount:
+                      gamesCollectionController.gamesCollectionList.length,
                 );
               },
             ),
           ),
           Observer(
             builder: (_) {
-              if (pages.needToOpenCollectionPageModal) {
+              if (gamesCollectionController.needToOpenCollectionPageModal) {
                 print("ABRIR MODAL!");
                 _modalDelay.run(() => modal.mainBottomSheet(
                     context,
                     WillPopScope(
                       onWillPop: () {
-                        return _onBackPressedAtModal(pages);
+                        return _onBackPressedAtModal(gamesCollectionController);
                       },
                       child: Column(
                         children: <Widget>[
                           TextField(
                             onChanged: (text) {
-                              _onChangedSearch(text, pages, context);
+                              _onChangedSearch(
+                                  text, gamesCollectionController, context);
                             },
                             decoration: InputDecoration(
                               labelText: "Pesquisar",
@@ -277,8 +268,9 @@ class GamesCollectionPage extends StatelessWidget {
                           ),
                           Observer(
                             builder: (_) {
-                              print("PAGES STATE -> $pages");
-                              if (pages.isLoading) {
+                              print(
+                                  "gamesCollectionController STATE -> $gamesCollectionController");
+                              if (gamesCollectionController.isLoading) {
                                 return Flexible(
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
@@ -298,9 +290,11 @@ class GamesCollectionPage extends StatelessWidget {
                                     index,
                                     deviceHeight,
                                     deviceWidth,
-                                    pages.searchThingsFromBgg,
+                                    gamesCollectionController
+                                        .searchThingsFromBgg,
                                   ),
-                                  itemCount: pages.searchThingsFromBgg.length,
+                                  itemCount: gamesCollectionController
+                                      .searchThingsFromBgg.length,
                                 ),
                               );
                             },
@@ -308,9 +302,11 @@ class GamesCollectionPage extends StatelessWidget {
                           RaisedButton(
                             onPressed: () {
                               Navigator.pop(context);
-                              pages.updateSearchListOfThingsFromBgg([]);
-                              pages.changeNeedToOpenCollectionPageModal(false);
-                              pages.updateIsLoading(false);
+                              gamesCollectionController
+                                  .updateSearchListOfThingsFromBgg([]);
+                              gamesCollectionController
+                                  .changeNeedToOpenCollectionPageModal(false);
+                              gamesCollectionController.updateIsLoading(false);
                             },
                             child: Text("Fechar"),
                           ),
